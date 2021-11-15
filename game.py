@@ -58,7 +58,7 @@ class Strawberry(GameObject):
 
 class Bomb(GameObject):
     def __init__(self):
-        super(Bomb, self).__init__(0, 0, 'strawberry.png')
+        super(Bomb, self).__init__(0, 0, 'bomb.gif')
         self.dx = 0
         self.dy = (randint(0, 200) / 100) + 1
         self.reset() # call reset here! 
@@ -67,13 +67,23 @@ class Bomb(GameObject):
         self.x += self.dx
         self.y += self.dy
         # Check the y position of the apple
-        if self.y > 500: 
+        if self.y > 500 or self.x > 500: 
             self.reset()
 
     # add a new method
     def reset(self):
-        self.x = choice(lanes)
-        self.y = -64
+        self.dx = 0
+        self.dy = 0
+        direction = choice(['down', 'right'])
+        if direction == 'down':
+            self.x = choice(lanes)
+            self.y = -64
+            self.dy = (randint(0, 200) / 100) + 1
+        elif direction == 'right':
+            self.x = -64
+            self.y = choice(lanes)
+            self.dx = (randint(0, 200) / 100) + 1
+        
 
 class Player(GameObject):
     def __init__(self):
@@ -127,6 +137,7 @@ clock = pygame.time.Clock()
 apple = Apple()
 player = Player()
 strawberry = Strawberry()
+bomb = Bomb()
 
 # Make a group
 all_sprites = pygame.sprite.Group()
@@ -134,6 +145,12 @@ all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 all_sprites.add(apple)
 all_sprites.add(strawberry)
+all_sprites.add(bomb)
+
+# make a fruits Group
+fruit_sprites = pygame.sprite.Group()
+fruit_sprites.add(apple)
+fruit_sprites.add(strawberry)
 
 running = True
 while running:
@@ -161,7 +178,17 @@ while running:
         entity.move()
         entity.render(screen)
 
+    # Check Colisions
+    fruit = pygame.sprite.spritecollideany(player, fruit_sprites)
+    if fruit:
+        fruit.reset()
+
+    # Check collision player and bomb
+    if pygame.sprite.collide_rect(player, bomb):
+        running = False
+
     # Update the window
     pygame.display.flip()
     clock.tick(60)
+    #print(f"{bomb.x}:{bomb.y}")
 
